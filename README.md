@@ -26,8 +26,20 @@ cat https://ftp.cdc.gov/pub/HEALTH_STATISTICS/NCHS/datalinkage/linked_mortality/
 
    ## Development 
    ### Edit and rename 
-   - Upload the provided Stata .do 
+   - Upload `Stata_ReadInProgramAllSurveys.do` to your repo
    - Rename this file to followup.do and commit it with the description: “Updated DEMO.XPT linkage .do file”.
-     
+   ```stata
+   //use your own project repo 
+   global repo "https://github.com/hyomin295/project"
+   do ${repo}followup.do
+   save followup, replace
+   ```
 
    ### Merging 
+   - merge the survey data to mortality followup data 
+   ```stata
+   import sasxport5 "https://wwwn.cdc.gov/Nchs/Nhanes/1999-2000/DEMO.XPT", clear
+   merge 1:1 seqn using followup
+      //this ensures the alignmnet of the unqiue sequence
+   lookfor follow
+   ```
