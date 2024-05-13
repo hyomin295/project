@@ -45,3 +45,10 @@ cat https://ftp.cdc.gov/pub/HEALTH_STATISTICS/NCHS/datalinkage/linked_mortality/
       //this ensures the alignmnet of the unqiue sequence
    lookfor follow
    ```
+## Analysis 
+- after merging the data, analyses:
+     - survival analysis between self-reported health status and mortality outcome
+     - cox regression model unadjusted and adjusted
+  ### stata do file
+  - Click [here] () to view the results.
+    
