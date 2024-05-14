@@ -1,7 +1,7 @@
 
 global SURVEY NHANES_1999_2000     // REPLACE <SURVEY> WITH RELEVANT SURVEY NAME (IN ALL CAPS)
 global mort "https://ftp.cdc.gov/pub/HEALTH_STATISTICS/NCHS/datalinkage/linked_mortality/"
-global repo "https://github.com/hyomin295/project"
+global repo "https://raw.githubusercontent.com/hyomin295/project/main/"
 * example syntax: 
 * global SURVEY NHIS_2018
 * or
