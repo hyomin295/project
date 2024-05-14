@@ -51,5 +51,5 @@ cat https://ftp.cdc.gov/pub/HEALTH_STATISTICS/NCHS/datalinkage/linked_mortality/
      - survival analysis between self-reported health status and mortality outcome
      - cox regression model unadjusted and adjusted
   ### Stata do file
-  - Click [here](https://github.com/hyomin295/project/blob/main/wk7.html) to view the results.
+  - Click [here](https://hyomin295.github.io/project/wk7.html) to view the results.
     
