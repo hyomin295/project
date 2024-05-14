@@ -1,4 +1,4 @@
-# Project
+# Survival analysis: non-parametric, semi-parametric, parametric
 ## Week 6 part 1 
    ## Import the survey data 
    - From NAHNES, download 1999-2000 National Health and Nutrition Examination Survey
@@ -45,10 +45,11 @@ cat https://ftp.cdc.gov/pub/HEALTH_STATISTICS/NCHS/datalinkage/linked_mortality/
       //this ensures the alignmnet of the unqiue sequence
    lookfor follow
    ```
-## Analysis 
+## Week 7 
+### Analysis 
 - after merging the data, analyses:
      - survival analysis between self-reported health status and mortality outcome
      - cox regression model unadjusted and adjusted
   ### Stata do file
-  - Click [here](file:///C:/Users/leehy/OneDrive%20-%20Johns%20Hopkins/JHU%20BSPH%20Classes/Term%204%202024/Stata%20Intermediate/wk7/wk7.html) to view the results.
+  - Click [here](https://github.com/hyomin295/project/blob/main/wk7.html) to view the results.
     
