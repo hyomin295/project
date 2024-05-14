@@ -1,0 +1,421 @@
+<p>cd &ldquo;C:\Users\leehy\OneDrive - Johns Hopkins\JHU BSPH Classes\Term 4 2024\Stata Intermediate\wk7&rdquo;</p>
+<head>
+  <link rel="stylesheet" type="text/css" href="stmarkdown.css">
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML">
+</script>
+</head>
+<h1><a href="#analysis-and-results-for-project-stata-ii" id="analysis-and-results-for-project-stata-ii">Analysis and Results for Project Stata II</a></h1>
+<h2><a href="#non-parametric-kaplan-meier-and-semi-parametric-cox-analysis" id="non-parametric-kaplan-meier-and-semi-parametric-cox-analysis">Non-Parametric (Kaplan-Meier) and Semi-Parametric (Cox) Analysis</a></h2>
+<h3><a href="#hyomin-lee" id="hyomin-lee">Hyomin Lee</a></h3>
+<hr />
+<p><em><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><em>Data Prepping</em></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></em>*** ********************************************************************************</p>
+<pre><code>. ** Clear all
+.     cls
+
+.     clear all
+
+.     
+. ** Set Working Directory 
+.         cd &quot;C:\Users\leehy\OneDrive - Johns Hopkins\JHU BSPH Classes\Te
+&gt; rm 4 2024\Stata Intermediate\wk6&quot;
+
+.         pwd
+
+.         
+. ** Link the datsets   
+.         ** golbal macro for the repository path
+.         global repo &quot;https://raw.githubusercontent.com/hyomin295/projec
+&gt; t/main/&quot;
+
+.         
+.         ** global macro for NHANES for datasets
+.         global nhanes &quot;https://wwwn.cdc.gov/Nchs/Nhanes/&quot;
+
+. 
+. ** Setting the data 
+.         ** Run &quot;followup.do&quot; from repo in global path. 
+.     do ${repo}followup.do
+
+.     save followup.dta, replace 
+
+.         
+.     ** Import 1999-2000 survey dataset from the website and merge with 
+&gt; the followup data
+.         //for complete variables 
+.         import sasxport5 &quot;${nhanes}1999-2000/DEMO.XPT&quot;, clear
+
+.         merge 1:1 seqn using followup.dta, nogen // seqn = id var
+
+.         save survey_demo.dta, replace 
+
+.         
+.     ** Import the dataset with self-reported quality of health 
+.         //to merge with the main survey_demo.dta
+.        import sasxport5 &quot;${nhanes}1999-2000/HUQ.XPT&quot;, clear
+
+.        tab huq010 
+
+.        merge 1:1 seqn using survey_demo, nogen keep(matched)
+
+.     
+.     ** Clear repo
+.        rm followup.dta
+
+.        rm survey_demo.dta
+
+
+</code></pre>
+<hr />
+<p>***<strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong>Survival Analysis</strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong> ********************************************************************************</p>
+<pre><code>. ** Set survival dataset using stset (followup time) fail(outcome=1) id(
+&gt; id)
+.         ** Create the year variable and adjust to person-years 
+.                 gen years = permth_int/12
+
+.                 label var years &quot;Person-Year FUP from NHANES interview 
+&gt; date &quot;
+
+.         sum years // 0 to 20.83 PY
+
+.         codebook years 
+
+.         ** PY=0 will be omitted from survival analysis so keep as 0.5 t
+&gt; o retain 
+.         replace years=0.5 if years==0
+
+.    
+.     ** Outcome variable (total mortality status)
+.         codebook mortstat
+
+.         tab mortstat, mi // 69% alive and 31% dead
+
+.         
+.     ** Exposure variable (self-reported health)
+.         tab huq010, mi //General health condition
+
+.     ** 5 observations in 9, replace as missing 
+.         replace huq010=. if huq010==9
+
+.             
+.     ** Label self-report measure 
+.         labe define huq010 1&quot;Excellent&quot; 2&quot;Very Good&quot; 3&quot;Good&quot; 4&quot;Fair&quot; 5&quot;
+&gt; Poor&quot;
+
+.         label value huq010 huq010
+
+.         tab huq010, mi
+
+.         
+.  ** make local for each levels, for labeling the lengends in figure 
+.         levelsof huq010, local(numlevels) 
+
+.         local i = 1  //local macro i to 1
+
+.         ** loop over each level in the list of numlevels 
+.         foreach l of numlist `numlevels' {  
+
+. 
+.        
+. ** Stset 
+.   stset years, fail(mortstat)
+
+.   save hw7, replace 
+
+.   
+
+</code></pre>
+<hr />
+<p><em><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><em>Kaplan-Meier and Cox Regression</em></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></em>* ********************************************************************************</p>
+<p><strong><strong>Kaplan-Meier (non-parametric)</strong></strong></p>
+<pre><code>.     * Graph by heath condition 
+.         clear all
+
+.     use hw7, clear
+
+.             
+.        sts graph , fail by(huq010) ci ///
+&gt;         title(Figure:Cumulative Mortality  by Self-Reported Health Stat
+&gt; us, size())   ///
+&gt;         legend(size(*0.65) order( 9 &quot;Poor&quot; 7 &quot;Fair&quot; 5 &quot;Good&quot; 3 &quot;Very Go
+&gt; od&quot; 1 &quot;Excellent&quot;  ) ///
+&gt;         cols(1) rows(5) position(0) region(c(*0.05)) ///
+&gt;         lab(1 &quot;$legend1&amp;quot&quot;) ///
+&gt;         lab(2 &quot;$legend2&amp;quot&quot;) ///
+&gt;         lab(3 &quot;$legend3&amp;quot&quot;) ///
+&gt;         lab(4 &quot;$legend4&amp;quot&quot;) ///
+&gt;         lab(5 &quot;$legend5&amp;quot&quot;)) ///
+&gt;         xtitle(&quot;Person Years from Interview&quot;, size())  ///
+&gt;         ytitle(&quot;Proportion of mortality (95%CI)&quot;, size())
+
+.         graph save KM.gph, replace
+
+.        
+
+</code></pre>
+<p>**Figure 1. Kaplan-Meier Curve <img src="Graph12.svg" ></p>
+<p><strong><strong>Cox Regression (semi-parametric)</strong></strong> **Unadjusted</p>
+<pre><code>.         stcox i.huq010, basesurv(s0)
+
+.    
+.         matrix define mat = r(table)
+
+.         ** checking table content
+.         matrix list mat 
+
+.         ** transpose table
+.         matrix mat = mat' 
+
+.     ** convert to dataset 
+.                 svmat mat 
+
+.         
+.         preserve 
+
+.         keep mat* 
+
+.         drop if missing(mat1)
+
+.         rename (mat1 mat2 mat3 mat4 mat5 mat6 mat7 mat8 mat9)(b se z p 
+&gt; ll ul df crit eform)
+
+.         capture drop x 
+
+.         ** ID for each observations
+.         gen x=_n
+
+.         replace b=log(b)
+
+.         replace ll=log(ll)
+
+.         replace ul=log(ul)
+
+.         twoway (scatter b x) || ///
+&gt;                (rcap ll ul x, ///
+&gt;                    yline(0, lcol(lime)) ///
+&gt;                    ylab( ///
+&gt;                        -2.08 &quot;0.125&quot; ///
+&gt;                        -1.39 &quot;0.25&quot; ///
+&gt;                        -.69 &quot;0.5&quot; ///
+&gt;                          0 &quot;1&quot;  ///
+&gt;                        .69 &quot;2&quot; ///
+&gt;                        1.39 &quot;4&quot; ///
+&gt;                        2.08 &quot;8&quot; ///
+&gt;                        2.78 &quot;16&quot;) ///
+&gt;                    legend(off)  ///
+&gt;                    title(&quot; &quot;) ///
+&gt;                    ytitle(&quot; &quot;) ///
+&gt;                 xlab( ///
+&gt;                    1 &quot;$legend1&quot; ///
+&gt;                    2 &quot;$legend2&quot; ///
+&gt;                    3 &quot;$legend3&quot; ///
+&gt;                    4 &quot;$legend4&quot; ///
+&gt;                    5 &quot;$legend5&quot;) ///
+&gt;                xti(&quot;Self-Reported Health&quot;) ///
+&gt;                    ) 
+
+.         graph export semipara_unadj.png, replace 
+
+.                 graph save semipara_unadj.gph, replace 
+
+.         restore 
+
+
+</code></pre>
+<p><strong>Figure 1. Unadjusted Cox Regression, Hazard Ratio</strong></p>
+<p><img src="Graph13.svg" ></p>
+<p>**Adjusted Cox (age, gender, race, pregnancy, time to care, )</p>
+<pre><code>.     
+.     * Variables to adjust for 
+.         *Age
+.             codebook ridageyr // No missing
+
+.             hist ridageyr 
+
+.             graph export nonpara.png, replace
+
+.             //replace ridageyr=ridageyr/10
+. 
+.         capture drop s0 
+
+.         stcox i.huq010 ridageyr riagendr ridreth1 huq050  , basesurv(s0
+&gt; )
+
+.         return list
+
+.         matrix define mat_adj=r(table)
+
+.         matrix define mat_adj=mat_adj'
+
+.         matrix list mat_adj
+
+.         svmat mat_adj
+
+.         
+.         preserve
+
+.         keep mat_adj*
+
+.         drop if missing(mat_adj1)
+
+.         rename (mat_adj1 mat_adj2 mat_adj3 mat_adj4 mat_adj5 mat_adj6 m
+&gt; at_adj7 mat_adj8 mat_adj9)(b se z p ll ul df crit eform)
+
+.         gen x=_n
+
+.         replace b=log(b)
+
+.         replace ll=log(ll)
+
+.         replace ul=log(ul)
+
+.         twoway (scatter b x if inrange(x,1,5)) || ///
+&gt;                (rcap ll ul x if inrange(x,1,5), ///
+&gt;                    yline(0, lcol(lime)) ///
+&gt;                    ylab( ///
+&gt;                        -2.08 &quot;0.125&quot; ///
+&gt;                        -1.39 &quot;0.25&quot; ///
+&gt;                        -.69 &quot;0.5&quot; ///
+&gt;                          0 &quot;1&quot;  ///
+&gt;                        .69 &quot;2&quot; ///
+&gt;                        1.39 &quot;4&quot; ///
+&gt;                        2.08 &quot;8&quot; ///
+&gt;                        2.78 &quot;16&quot;) ///
+&gt;                    legend(off)  ///
+&gt;                    title(&quot; &quot;) ///
+&gt;                     note(&quot;Note:Adjusted for age, sex, ethnicity/race an
+&gt; d times of receiving health care over past year&quot;, size(*0.9)) ///
+&gt;                    ytitle(&quot; &quot;) ///
+&gt;                 xlab( ///
+&gt;                    1 &quot;$legend1&quot; ///
+&gt;                    2 &quot;$legend2&quot; ///
+&gt;                    3 &quot;$legend3&quot; ///
+&gt;                    4 &quot;$legend4&quot; ///
+&gt;                    5 &quot;$legend5&quot;) ///
+&gt;                xti(&quot;Self-Reported Health&quot;) ///
+&gt;                    ) 
+
+.         graph export semipara_adj.png, replace 
+
+.                 graph save semipara_adj.gph, replace 
+
+.         restore
+
+. 
+
+</code></pre>
+<p><strong>Figure:Adjusted Hazard Ratio by Self-Reported Health</strong></p>
+<p><img src="Graph14.svg" ></p>
+<p><strong><strong>Comparision of Adjusted and Unadjusted Effects ( Hazard Ratio)</strong></strong></p>
+<pre><code>.     
+.     graph combine semipara_unadj.gph semipara_adj.gph, ///
+&gt;         rows(1) ///
+&gt;     xcommon ti(&quot;Figure:Unadjusted vs Adjusted Hazard Ratio (95%CI)&quot;)
+
+.     graph save unadj_adj.gph, replace  
+
+.     
+.     
+.     
+
+</code></pre>
+<p><img src="Graph15.svg" ></p>
+<p><strong>Comment on Unadjusted Hazard Ratio (HR)</strong> Self-reported health is associated with mortality with significance. The effect size for unadjusted HR was higher than adjusted HR. Lower the self-reported health status, higher the risk or mortality.</p>
+<p><strong>Extracting parameters</strong></p>
+<pre><code>. //     
+.     cls
+
+.     clear all
+
+.     use hw7, clear
+
+.     replace riagendr=riagendr-1
+
+.     stcox i.huq010 ridageyr riagendr, basesurv(s0)
+
+.     keep s0 _t _t0 _st _d 
+
+.     save s0, replace 
+
+.     ereturn list 
+
+.     matrix beta = e(b)
+
+.     matrix vcov = e(V)
+
+.     matrix SV = ( ///
+&gt;         0, ///
+&gt;         1, ///
+&gt;         0, ///
+&gt;         0, ///
+&gt;         0, ///
+&gt;         40, ///
+&gt;         1 ///
+&gt;     )
+
+.     matrix SV_ref = ( ///
+&gt;         0, ///
+&gt;         1, ///
+&gt;         0, ///
+&gt;         0, ///
+&gt;         0, ///
+&gt;         60, ///
+&gt;         1 ///
+&gt;     )
+
+.     //absolute risk
+.     matrix risk_score = SV * beta'
+
+.     matrix list risk_score
+
+.     di exp(risk_score[1,1])
+
+.     matrix var_prediction = SV * vcov * vcov'
+
+.     matrix se_prediction = sqrt(var_prediction[1,1])
+
+. 
+.     matrix risk_score_ref = SV_ref * beta'
+
+.     matrix list risk_score_ref
+
+.     di exp(risk_score_ref[1,1])
+
+.     matrix var_prediction_ref = SV_ref * vcov * vcov'
+
+.     matrix se_prediction_ref = sqrt(var_prediction_ref[1,1])
+
+. 
+.     local hr = exp(risk_score_ref[1,1])/exp(risk_score[1,1])
+
+.     di `hr'
+
+. 
+.     //di &quot;We conclude that `exp(risk_score[1,1])'&quot;
+. 
+.     //
+.     gen f0 = (1 - s0) * 100 
+
+.     gen f1_ = f0 * exp(risk_score[1,1])
+
+.    
+.    line f1 _t , ///  
+&gt;         sort connect(step step) ///
+&gt;         legend(ring(0)) ///
+&gt;         ylab(0(5)20) xlab(0(5)20) ///
+&gt;         yti(&quot;&quot;) ///
+&gt;         ti(&quot;Figure: Risk of mortaltity(%)&quot;, size(*0.85)pos()) ///
+&gt;         xti(&quot;Person Years from Interview&quot;) ///
+&gt;         note(&quot; &quot;  ,size()  ///
+&gt;                      )
+
+.     graph save scenario.png, replace 
+
+.     
+.     
+
+</code></pre>
+<p><img src="Graph16.svg" ></p>
