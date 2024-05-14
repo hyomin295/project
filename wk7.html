@@ -1,4 +1,3 @@
-<p>cd &ldquo;C:\Users\leehy\OneDrive - Johns Hopkins\JHU BSPH Classes\Term 4 2024\Stata Intermediate\wk7&rdquo;</p>
 <head>
   <link rel="stylesheet" type="text/css" href="stmarkdown.css">
 <script type="text/x-mathjax-config">
@@ -20,16 +19,16 @@
 
 .     
 . ** Set Working Directory 
-.         cd &quot;C:\Users\leehy\OneDrive - Johns Hopkins\JHU BSPH Classes\Te
-&gt; rm 4 2024\Stata Intermediate\wk6&quot;
+.         cd &quot;C:\Users\leehy\OneDrive - Johns Hopkins\JHU BSPH Classes\Term 4 2
+&gt; 024\Stata Intermediate\wk6&quot;
 
 .         pwd
 
 .         
 . ** Link the datsets   
 .         ** golbal macro for the repository path
-.         global repo &quot;https://raw.githubusercontent.com/hyomin295/projec
-&gt; t/main/&quot;
+.         global repo &quot;https://raw.githubusercontent.com/hyomin295/project/main
+&gt; /&quot;
 
 .         
 .         ** global macro for NHANES for datasets
@@ -43,8 +42,8 @@
 .     save followup.dta, replace 
 
 .         
-.     ** Import 1999-2000 survey dataset from the website and merge with 
-&gt; the followup data
+.     ** Import 1999-2000 survey dataset from the website and merge with the fo
+&gt; llowup data
 .         //for complete variables 
 .         import sasxport5 &quot;${nhanes}1999-2000/DEMO.XPT&quot;, clear
 
@@ -71,20 +70,18 @@
 </code></pre>
 <hr />
 <p>***<strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong>Survival Analysis</strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong> ********************************************************************************</p>
-<pre><code>. ** Set survival dataset using stset (followup time) fail(outcome=1) id(
-&gt; id)
+<pre><code>. ** Set survival dataset using stset (followup time) fail(outcome=1) id(id)
 .         ** Create the year variable and adjust to person-years 
 .                 gen years = permth_int/12
 
-.                 label var years &quot;Person-Year FUP from NHANES interview 
-&gt; date &quot;
+.                 label var years &quot;Person-Year FUP from NHANES interview date &quot;
 
 .         sum years // 0 to 20.83 PY
 
 .         codebook years 
 
-.         ** PY=0 will be omitted from survival analysis so keep as 0.5 t
-&gt; o retain 
+.         ** PY=0 will be omitted from survival analysis so keep as 0.5 to reta
+&gt; in 
 .         replace years=0.5 if years==0
 
 .    
@@ -102,8 +99,7 @@
 
 .             
 .     ** Label self-report measure 
-.         labe define huq010 1&quot;Excellent&quot; 2&quot;Very Good&quot; 3&quot;Good&quot; 4&quot;Fair&quot; 5&quot;
-&gt; Poor&quot;
+.         labe define huq010 1&quot;Excellent&quot; 2&quot;Very Good&quot; 3&quot;Good&quot; 4&quot;Fair&quot; 5&quot;Poor&quot;
 
 .         label value huq010 huq010
 
@@ -138,10 +134,10 @@
 
 .             
 .        sts graph , fail by(huq010) ci ///
-&gt;         title(Figure:Cumulative Mortality  by Self-Reported Health Stat
-&gt; us, size())   ///
-&gt;         legend(size(*0.65) order( 9 &quot;Poor&quot; 7 &quot;Fair&quot; 5 &quot;Good&quot; 3 &quot;Very Go
-&gt; od&quot; 1 &quot;Excellent&quot;  ) ///
+&gt;         title(Figure:Cumulative Mortality  by Self-Reported Health Status, si
+&gt; ze())   ///
+&gt;         legend(size(*0.65) order( 9 &quot;Poor&quot; 7 &quot;Fair&quot; 5 &quot;Good&quot; 3 &quot;Very Good&quot; 1 
+&gt; &quot;Excellent&quot;  ) ///
 &gt;         cols(1) rows(5) position(0) region(c(*0.05)) ///
 &gt;         lab(1 &quot;$legend1&amp;quot&quot;) ///
 &gt;         lab(2 &quot;$legend2&amp;quot&quot;) ///
@@ -156,7 +152,7 @@
 .        
 
 </code></pre>
-<p>**Figure 1. Kaplan-Meier Curve <img src="Graph12.svg" ></p>
+<p>**Figure 1. Kaplan-Meier Curve <img src="Graph17.svg" ></p>
 <p><strong><strong>Cox Regression (semi-parametric)</strong></strong> **Unadjusted</p>
 <pre><code>.         stcox i.huq010, basesurv(s0)
 
@@ -179,8 +175,8 @@
 
 .         drop if missing(mat1)
 
-.         rename (mat1 mat2 mat3 mat4 mat5 mat6 mat7 mat8 mat9)(b se z p 
-&gt; ll ul df crit eform)
+.         rename (mat1 mat2 mat3 mat4 mat5 mat6 mat7 mat8 mat9)(b se z p ll ul 
+&gt; df crit eform)
 
 .         capture drop x 
 
@@ -226,7 +222,7 @@
 
 </code></pre>
 <p><strong>Figure 1. Unadjusted Cox Regression, Hazard Ratio</strong></p>
-<p><img src="Graph13.svg" ></p>
+<p><img src="Graph18.svg" ></p>
 <p>**Adjusted Cox (age, gender, race, pregnancy, time to care, )</p>
 <pre><code>.     
 .     * Variables to adjust for 
@@ -241,8 +237,7 @@
 . 
 .         capture drop s0 
 
-.         stcox i.huq010 ridageyr riagendr ridreth1 huq050  , basesurv(s0
-&gt; )
+.         stcox i.huq010 ridageyr riagendr ridreth1 huq050  , basesurv(s0)
 
 .         return list
 
@@ -261,8 +256,8 @@
 
 .         drop if missing(mat_adj1)
 
-.         rename (mat_adj1 mat_adj2 mat_adj3 mat_adj4 mat_adj5 mat_adj6 m
-&gt; at_adj7 mat_adj8 mat_adj9)(b se z p ll ul df crit eform)
+.         rename (mat_adj1 mat_adj2 mat_adj3 mat_adj4 mat_adj5 mat_adj6 mat_adj
+&gt; 7 mat_adj8 mat_adj9)(b se z p ll ul df crit eform)
 
 .         gen x=_n
 
@@ -286,8 +281,8 @@
 &gt;                        2.78 &quot;16&quot;) ///
 &gt;                    legend(off)  ///
 &gt;                    title(&quot; &quot;) ///
-&gt;                     note(&quot;Note:Adjusted for age, sex, ethnicity/race an
-&gt; d times of receiving health care over past year&quot;, size(*0.9)) ///
+&gt;                     note(&quot;Note:Adjusted for age, sex, ethnicity/race and time
+&gt; s of receiving health care over past year&quot;, size(*0.9)) ///
 &gt;                    ytitle(&quot; &quot;) ///
 &gt;                 xlab( ///
 &gt;                    1 &quot;$legend1&quot; ///
@@ -308,7 +303,7 @@
 
 </code></pre>
 <p><strong>Figure:Adjusted Hazard Ratio by Self-Reported Health</strong></p>
-<p><img src="Graph14.svg" ></p>
+<p><img src="Graph19.svg" ></p>
 <p><strong><strong>Comparision of Adjusted and Unadjusted Effects ( Hazard Ratio)</strong></strong></p>
 <pre><code>.     
 .     graph combine semipara_unadj.gph semipara_adj.gph, ///
@@ -322,7 +317,7 @@
 .     
 
 </code></pre>
-<p><img src="Graph15.svg" ></p>
+<p><img src="Graph20.svg" ></p>
 <p><strong>Comment on Unadjusted Hazard Ratio (HR)</strong> Self-reported health is associated with mortality with significance. The effect size for unadjusted HR was higher than adjusted HR. Lower the self-reported health status, higher the risk or mortality.</p>
 <p><strong>Extracting parameters</strong></p>
 <pre><code>. //     
@@ -418,4 +413,4 @@
 .     
 
 </code></pre>
-<p><img src="Graph16.svg" ></p>
+<p><img src="Graph21.svg" ></p>
